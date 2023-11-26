@@ -4,6 +4,7 @@ const unsigned long Interval = 30;
 const float T = 1000;
 const float Pi = 3.1415f;
 const float TwoPi = 2*Pi;
+const float e = 2.71828;
 
 const int NumberOfEntities = 3;
 const int EntityLedPin[NumberOfEntities] = { 9, 7, 5};
@@ -11,12 +12,18 @@ const int NumberOfSchemes[NumberOfEntities] = { 2, 2, 2};
 int currentSchemeIndex[NumberOfEntities];
 float x[NumberOfEntities];
 
-typedef enum {Dark, Light, Wave, StartingFire, IntenseFire} CurveType;
+typedef enum {
+  Dark, 
+  Light, 
+  Wave, 
+  StartingFire, 
+  IntenseFire, 
+  ThinBell} CurveType;
 
 const CurveType SchemeLightFunctions[][NumberOfEntities] = 
 {
-  {Wave, Dark},
-  {Dark, Wave}, 
+  {ThinBell, Dark},
+  {Dark, ThinBell}, 
   {StartingFire, IntenseFire}
 };
 
@@ -82,6 +89,8 @@ float Calculate(CurveType curve, float x)
       return .3 + 1/16.0 * cos(8*Pi*x) - 1/8.0 * cos(16*Pi*x) + 1/8.0 * cos(32*Pi*x) - 1/8.0 * cos(64*Pi*x);
     case IntenseFire:
       return .7 + 1/4.0 * cos(8*Pi*x) - 1/8.0 * cos(16*Pi*x) + 1/16.0 * cos(32*Pi*x) - 1/32.0 * cos(64*Pi*x);
+    case ThinBell:
+      return pow(e, -100*pow(x-0.5, 2));
   }
   
   return 0;
