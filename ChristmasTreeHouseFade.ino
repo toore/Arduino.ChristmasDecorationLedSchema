@@ -8,30 +8,29 @@ const float e = 2.71828;
 
 const int NumberOfEntities = 3;
 const int EntityLedPin[NumberOfEntities] = { 9, 7, 5};
-const int NumberOfSchemes[NumberOfEntities] = { 2, 2, 2};
-int currentSchemeIndex[NumberOfEntities];
+const int NumberOfSchemas[NumberOfEntities] = { 2, 2, 2};
+int currentSchemaIndex[NumberOfEntities];
 float x[NumberOfEntities];
 
-typedef enum {
+enum LightFunction {
   Dark, 
   Light, 
   Wave, 
   StartingFire, 
   IntenseFire, 
-  ThinBell} CurveType;
-
-const CurveType SchemeLightFunctions[][NumberOfEntities] = 
-{
-  {ThinBell, Dark},
-  {Dark, ThinBell}, 
-  {StartingFire, IntenseFire}
+  ThinBell
 };
 
-const float SchemePeriods[][NumberOfEntities] = 
+struct Schema {
+  LightFunction Light;
+  float Period;
+};
+
+const static Schema Schemas[][NumberOfEntities] = 
 {
-  {T*2, T}, 
-  {T, T*2}, 
-  {T*10, T*10}
+  {{ThinBell, T*2}, {Dark, T}},
+  {{Dark, T},  {ThinBell, T*2}}, 
+  {{StartingFire, T*10}, {IntenseFire, T*10}}
 };
 
 void setup() 
@@ -51,20 +50,20 @@ void loop()
   {
     for(int i = 0; i < NumberOfEntities; i++)
     {
-      int schemeIndex = currentSchemeIndex[i];
-      int brightness = (int)(Calculate(SchemeLightFunctions[i][schemeIndex], x[i]) * 255);
-      // if(i==2)
-      //   Serial.println(brightness);
+      int schemaIndex = currentSchemaIndex[i];
+      const Schema* schema = &(Schemas[i][schemaIndex]);
+
+      int brightness = (int)(Calculate(schema->Light, x[i]) * 255);
       analogWrite(EntityLedPin[i], brightness);
 
-      x[i] += 1 / SchemePeriods[i][schemeIndex] * Interval;
+      x[i] += 1 / schema->Period * Interval;
       if(x[i] >= 1.0)
       {
         x[i] = 0.0f;
-        currentSchemeIndex[i]++;
-        if(currentSchemeIndex[i] >= NumberOfSchemes[i])
+        currentSchemaIndex[i]++;
+        if(currentSchemaIndex[i] >= NumberOfSchemas[i])
         {
-          currentSchemeIndex[i] = 0;
+          currentSchemaIndex[i] = 0;
         }
       }
     }
@@ -75,9 +74,9 @@ void loop()
 
 // Calculates a value between 0 and 1 (exclusive).
 // x value is a value between 0 and 1.
-float Calculate(CurveType curve, float x)
+float Calculate(LightFunction light, float x)
 {
-  switch (curve)
+  switch (light)
   {
     case Dark:
       return 0.0;
