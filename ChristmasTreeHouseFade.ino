@@ -1,31 +1,30 @@
 unsigned long startMillis;
 unsigned long currentMillis;
 const unsigned long Interval = 30;
-const float period = 1000;
+const float T = 1000;
 const float Pi = 3.1415f;
 const float TwoPi = 2*Pi;
-const float NominalStep = 1 / period * Interval;
 
 const int NumberOfEntities = 3;
 const int EntityLedPin[NumberOfEntities] = { 9, 7, 5};
-const int NumberOfSchemes[NumberOfEntities] = { 2, 2, 1};
+const int NumberOfSchemes[NumberOfEntities] = { 2, 2, 2};
 int currentSchemeIndex[NumberOfEntities];
-float radians[NumberOfEntities];
+float x[NumberOfEntities];
 
-typedef enum {Dark, Light, Wave, Fire} CurveType;
+typedef enum {Dark, Light, Wave, StartingFire, IntenseFire} CurveType;
 
 const CurveType SchemeLightFunctions[][NumberOfEntities] = 
 {
   {Wave, Dark},
   {Dark, Wave}, 
-  {Light}
+  {StartingFire, IntenseFire}
 };
 
-const float SchemeSteps[][NumberOfEntities] = 
+const float SchemePeriods[][NumberOfEntities] = 
 {
-  {NominalStep*.1, NominalStep*.2}, 
-  {NominalStep*.2, NominalStep*.1}, 
-  {NominalStep}
+  {T*2, T}, 
+  {T, T*2}, 
+  {T*10, T*10}
 };
 
 void setup() 
@@ -46,14 +45,15 @@ void loop()
     for(int i = 0; i < NumberOfEntities; i++)
     {
       int schemeIndex = currentSchemeIndex[i];
-      int brightness = (int)(Calculate(SchemeLightFunctions[i][schemeIndex], radians[i]) * 255);
-      //Serial.println(brightness);
+      int brightness = (int)(Calculate(SchemeLightFunctions[i][schemeIndex], x[i]) * 255);
+      // if(i==2)
+      //   Serial.println(brightness);
       analogWrite(EntityLedPin[i], brightness);
 
-      radians[i] += SchemeSteps[i][schemeIndex];
-      if(radians[i] >= 1.0)
+      x[i] += 1 / SchemePeriods[i][schemeIndex] * Interval;
+      if(x[i] >= 1.0)
       {
-        radians[i] = 0.0f;
+        x[i] = 0.0f;
         currentSchemeIndex[i]++;
         if(currentSchemeIndex[i] >= NumberOfSchemes[i])
         {
@@ -67,8 +67,8 @@ void loop()
 }
 
 // Calculates a value between 0 and 1 (exclusive).
-// Independent value is a value between 0 and 1.
-float Calculate(CurveType curve, float independent)
+// x value is a value between 0 and 1.
+float Calculate(CurveType curve, float x)
 {
   switch (curve)
   {
@@ -77,9 +77,11 @@ float Calculate(CurveType curve, float independent)
     case Light:
       return 1.0;
     case Wave:
-      return sin(independent*TwoPi - Pi*.5) * .5 + .5;
-    case Fire:
-      return sin(independent*TwoPi - Pi*.5) * .5 + .5;
+      return sin(x*TwoPi - Pi*.5) * .5 + .5;
+    case StartingFire:
+      return .3 + 1/16.0 * cos(8*Pi*x) - 1/8.0 * cos(16*Pi*x) + 1/8.0 * cos(32*Pi*x) - 1/8.0 * cos(64*Pi*x);
+    case IntenseFire:
+      return .7 + 1/4.0 * cos(8*Pi*x) - 1/8.0 * cos(16*Pi*x) + 1/16.0 * cos(32*Pi*x) - 1/32.0 * cos(64*Pi*x);
   }
   
   return 0;
