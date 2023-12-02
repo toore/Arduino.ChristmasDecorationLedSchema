@@ -1,25 +1,25 @@
 unsigned long startMillis;
 unsigned long currentMillis;
-const unsigned long Interval = 30;
-const float T = 1000;
-const float T2 = 2*T;
-const float T3 = 3*T;
-const float T4 = 4*T;
-const float T5 = 5*T;
-const float T6 = 6*T;
-const float T7 = 7*T;
-const float T10 = 10*T;
-const float T15 = 15*T;
-const float T20 = 20*T;
+const unsigned long UpdateInterval = 30;
+const int T = 1000;
+const int T2 = 2*T;
+const int T3 = 3*T;
+const int T4 = 4*T;
+const int T5 = 5*T;
+const int T6 = 6*T;
+const int T7 = 7*T;
+const int T10 = 10*T;
+const int T15 = 15*T;
+const int T20 = 20*T;
 const float Pi = 3.1415f;
 const float TwoPi = 2*Pi;
 const float e = 2.71828;
 
 const int NumberOfEntities = 3;
-const int EntityLedPin[NumberOfEntities] = { 9, 7, 5};
-const int NumberOfSchemas[NumberOfEntities] = { 10, 10, 10};
+const int EntityLedPin[NumberOfEntities] = {9, 7, 5};
+const int NumberOfSchemas[NumberOfEntities] = {10, 10, 10};
 int currentSchemaIndex[NumberOfEntities];
-float x[NumberOfEntities];
+int t[NumberOfEntities];
 
 enum LightFunction {
   Dark, 
@@ -32,7 +32,7 @@ enum LightFunction {
 
 struct Schema {
   LightFunction Light;
-  float Period;
+  int Period;
 };
 
 const static Schema Schemas[NumberOfEntities][10] = 
@@ -55,20 +55,21 @@ void setup()
 void loop() 
 {
   currentMillis = millis();
-  if (currentMillis - startMillis >= Interval)
+  if (currentMillis - startMillis >= UpdateInterval)
   {
     for(int i = 0; i < NumberOfEntities; i++)
     {
       int schemaIndex = currentSchemaIndex[i];
       const Schema* schema = &(Schemas[i][schemaIndex]);
 
-      int brightness = (int)(Calculate(schema->Light, x[i]) * 255);
+      float independentValue = (float)t[i] / schema->Period;
+      int brightness = (int)(Calculate(schema->Light, independentValue) * 255);
       analogWrite(EntityLedPin[i], brightness);
 
-      x[i] += 1 / schema->Period * Interval;
-      if(x[i] >= 1.0)
+      t[i] += UpdateInterval;
+      if(t[i] >= schema->Period)
       {
-        x[i] = 0.0f;
+        t[i] %= schema->Period;
         currentSchemaIndex[i]++;
         if(currentSchemaIndex[i] >= NumberOfSchemas[i])
         {
