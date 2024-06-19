@@ -16,7 +16,7 @@ const float TwoPi = 2*Pi;
 const float e = 2.71828;
 
 const int NumberOfEntities = 3;
-const int EntityLedPin[NumberOfEntities] = {9, 7, 5};
+const int EntityLedPin[NumberOfEntities] = {9, 7, 5}; // Tree (left-most), tree (positioned between left-most tree and house), house (right side)
 const int NumberOfSchemas[NumberOfEntities] = {10, 10, 10};
 int currentSchemaIndex[NumberOfEntities];
 int t[NumberOfEntities];
