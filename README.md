@@ -1,4 +1,4 @@
-# An Arduino christmas decoration LED schema
+# An Arduino christmas decoration LED scenario
 
 The schemas for the three different lights are defined by a function of the light and the time for the period.
 
