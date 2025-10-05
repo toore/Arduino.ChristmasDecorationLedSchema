@@ -4,6 +4,6 @@ The schemas for the three different lights are defined by a function of the ligh
 
 Wiring the LEDs to the analog output creates the light effects.
 
-## Example (3x the normal speed, clipped and not showing full scenario)
+## Live demo (3x the normal speed and showing only part of the full program)
 
 ![Animation example of implementation](./sample.gif)
